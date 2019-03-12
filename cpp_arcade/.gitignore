@@ -1,0 +1,6 @@
+assets/
+game/snake/scores.txt
+game/centipede/scores.txt
+game/solarfox/scores.txt
+games/*.so
+lib/*.so

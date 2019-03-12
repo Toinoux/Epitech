@@ -1,0 +1,534 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hello!</title>
+<link rel="stylesheet" href="https://stackedit.io/res-min/themes/base.css" />
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML"></script>
+</head>
+<body><div class="container"><h1 id="tekar-documentation"><strong>TEKAR Documentation</strong></h1>
+
+<p>Hi! In this documentation, you can learn to create your own <a href="#create-a-graphical-library">graphical library</a> and <a href="#create-a-game-library">game library</a> compatible with our game plateform <strong>TEKAR</strong>.</p>
+
+
+
+<h1 id="create-a-graphical-library">Create a graphical library</h1>
+
+<hr>
+
+
+
+<h3 id="1-getting-started">1. Getting started</h3>
+
+<blockquote>
+  <p>In order to make your graphical library compatible with our game platform, your graphical library’s class <strong>HAVE TO</strong> inherite from our graphical interface:</p>
+</blockquote>
+
+<pre><code>#include &lt;string&gt;
+#include "Common.hpp"
+
+namespace arc {
+    class IGraphic {
+    public:
+        virtual void setup() = 0;
+        virtual void clear() = 0;
+        virtual void display() = 0;
+        virtual bool pollEvent() = 0;
+        virtual bool isWindowOpen() const = 0;
+        virtual int getKeyCode() const = 0;
+        virtual void closeWindow() = 0;
+        virtual void destroy() = 0;
+        virtual int createTexture(const std::string &amp;) = 0;
+        virtual void drawBlock(const arc::Block &amp;,
+                    const arc::Vec2&lt;size_t&gt; &amp;) = 0;
+        virtual void drawText(const std::string &amp;,
+            const Vec2&lt;float&gt; &amp;, const Vec2&lt;size_t&gt; &amp;) = 0;
+        virtual void setTextAttributes(size_t, size_t) = 0;
+    };
+</code></pre>
+
+<hr>
+
+
+
+<h3 id="2-functions-explanations">2. Functions’ explanations</h3>
+
+
+
+<h4 id="void-setup"><strong>void setup()</strong></h4>
+
+<blockquote>
+  <p><strong>setup</strong> is called when the application starts and when switching library.</p>
+</blockquote>
+
+<p>In this function, you <strong>must</strong>:</p>
+
+<blockquote>
+  <ul>
+  <li>Initialize your attributes</li>
+  <li>Create the application’s window</li>
+  </ul>
+</blockquote>
+
+<p>For instance:</p>
+
+<pre><code>void arc::SFML::setup() 
+{
+    _wd = new sf::RenderWindow(sf::VideoMode(width, height), "Arcade");
+    if (!_font.loadFromFile("./fonts/arcade2.ttf"))
+        throw arc::ArcadeError("Error when loading font");
+}
+</code></pre>
+
+<hr>
+
+
+
+<h4 id="void-clear"><strong>void clear()</strong></h4>
+
+<blockquote>
+  <p><strong>clear</strong> is called in the application rendering loop</p>
+</blockquote>
+
+<p>In this function, you <strong>must</strong>:</p>
+
+<blockquote>
+  <ul>
+  <li>Clear the window’s rendering</li>
+  </ul>
+</blockquote>
+
+<p>For instance:</p>
+
+<pre><code>void arc::Ncurses::clear() 
+{
+    erase();
+}
+</code></pre>
+
+<hr>
+
+
+
+<h4 id="void-display"><strong>void display()</strong></h4>
+
+<blockquote>
+  <p><strong>display</strong> is called in the application rendering loop</p>
+</blockquote>
+
+<p>In this function, you <strong>must</strong>:</p>
+
+<blockquote>
+  <ul>
+  <li>Display on screen everthing that has been rendered</li>
+  </ul>
+</blockquote>
+
+<p>For instance:</p>
+
+<pre><code>void arc::SFML::display()
+{
+    _wd-&gt;display();
+}
+</code></pre>
+
+<hr>
+
+
+
+<h4 id="bool-pollevent"><strong>bool pollEvent()</strong></h4>
+
+<blockquote>
+  <p><strong>pollEvent</strong> is called in the application’s main loop</p>
+</blockquote>
+
+<p>For instance:</p>
+
+<pre><code>bool arc::SDL2::pollEvent() 
+{
+    return (SDL_PollEvent(&amp;_event));
+}
+</code></pre>
+
+<hr>
+
+
+
+<h4 id="bool-iswindowopen-const"><strong>bool isWindowOpen() const</strong></h4>
+
+<blockquote>
+  <p><strong>isWindowOpen</strong> must return <strong>false</strong> if the main window is closed</p>
+</blockquote>
+
+<p>For instance:</p>
+
+<pre><code>bool arc::SFML::isWindowOpen() const 
+{
+    return (_wd-&gt;isOpen());
+}
+</code></pre>
+
+<hr>
+
+
+
+<h4 id="int-getkeycode-const"><strong>int getKeyCode() const</strong></h4>
+
+<blockquote>
+  <p><strong>getKeyCode</strong> must return the key pressed at the moment.</p>
+  
+  <p>Keys listed in <a href="#keycode"><strong>arc::KeyCode</strong></a> enumeration must be returned with the value of the enumeration. Other keys must be returned as their <em>ascii</em> value</p>
+</blockquote>
+
+<hr>
+
+
+
+<h4 id="void-closewindow"><strong>void closeWindow()</strong></h4>
+
+<blockquote>
+  <p><strong>Close the window</strong></p>
+</blockquote>
+
+<hr>
+
+
+
+<h4 id="void-destroy"><strong>void destroy()</strong></h4>
+
+<blockquote>
+  <p><strong>destroy</strong> must destroy all textures created with <em>createTexture</em></p>
+</blockquote>
+
+<hr>
+
+
+
+<h4 id="int-createtextureconst-stdstring-texturefolderpath"><strong>int createTexture(const std::string &amp;texture_folder_path)</strong></h4>
+
+<blockquote>
+  <p><strong>createTexture</strong> load the texture from the texture_folder_path</p>
+</blockquote>
+
+<p>In this function, you <strong>must</strong>:</p>
+
+<blockquote>
+  <ul>
+  <li>load the texture from the “<em>texture_folder_path</em>/<strong>block.</strong> <em>extension</em>”</li>
+  <li>store the texture in a <em>std::vector</em></li>
+  <li>return the texture’s index in that same <em>std::vector</em> (-1 in case error)</li>
+  </ul>
+</blockquote>
+
+<p>For instance:</p>
+
+<pre><code>int arc::SFML::createTexture(const std::string &amp;path)
+{
+    std::string fpath = path + "/block.png";
+    sf::Texture *texture = new sf::Texture;
+
+    if (!texture-&gt;loadFromFile(fpath))
+        return (-1);
+    _blocks.push_back(texture);
+    return (_blocks.size() - 1);
+}
+</code></pre>
+
+<blockquote>
+  <p>The file <em>extension</em> is of your choice. But make sure that <strong>texture_folder_path</strong> contains that file.</p>
+</blockquote>
+
+<hr>
+
+
+
+<h4 id="void-drawblockconst-arcblock-block-const-arcvec2-mapsizes"><strong>void drawBlock(const arc::Block &amp;block, const arc::Vec2 &amp;map_sizes)</strong></h4>
+
+<blockquote>
+  <p><strong>drawBlock</strong> draw the <a href="#block">arc::Block</a> <em>block</em> to the screen</p>
+</blockquote>
+
+<p>For instance:</p>
+
+<pre><code>void arc::SDL2::drawBlock(const arc::Block &amp;b,
+const arc::Vec2&lt;size_t&gt; &amp;msize) const 
+{
+    if (_blocks.size() &lt;= (size_t)b.textureIdx
+        || _blocks[b.textureIdx] == NULL)
+        return;
+    SDL_Rect rect;
+    rect.x = ceil((float)b.pos.x * (float)arc::SDL2::width
+        / (msize.x == 0 ? 1.0 : (float)msize.x));
+    rect.y = ceil((float)b.pos.y * (float)arc::SDL2::height
+        / (msize.y == 0 ? 1.0 : (float)msize.y));
+    SDL_QueryTexture(_blocks[b.textureIdx], NULL, NULL, &amp;(rect.w), &amp;(rect.h));
+    rect.w = ceil((float)arc::SDL2::width /
+        (msize.x == 0 ? 1.0f : (float)msize.x));
+    rect.h = ceil((float)arc::SDL2::height /
+        (msize.y == 0 ? 1.0f : (float)msize.y));
+    SDL_RenderCopy(_renderer, _blocks[b.textureIdx], NULL, &amp;rect);
+}
+</code></pre>
+
+<blockquote>
+  <p>The block’s sizes and positions must be changed according to the <strong>map_sizes</strong></p>
+</blockquote>
+
+<hr>
+
+
+
+<h4 id="void-settextattributessizet-fontsize-sizet-color"><strong>void setTextAttributes(size_t font_size, size_t color)</strong></h4>
+
+<p>In this function, you <strong>must</strong>:</p>
+
+<blockquote>
+  <ul>
+  <li>Set the font_size</li>
+  <li>Set the text’s color (received as hexadimal format)</li>
+  </ul>
+</blockquote>
+
+<p><em>Remember:</em></p>
+
+<blockquote>
+  <p>These properties will be applied to all the following text until the next call to this function.</p>
+</blockquote>
+
+<p>For instance:</p>
+
+<pre><code>void arc::SDL2::setTextAttributes(size_t font_size, size_t hexcolor) 
+{
+    int r = (hexcolor &gt;&gt; 16) &amp; 0xFF;
+    int g = (hexcolor &gt;&gt; 8) &amp; 0xFF;
+    int b = (hexcolor) &amp; 0xFF;
+    _font_size = font_size;
+    _color = {static_cast&lt;Uint8&gt;(r), static_cast&lt;Uint8&gt;(g),
+        static_cast&lt;Uint8&gt;(b), 1};
+}
+</code></pre>
+
+<hr>
+
+
+
+<h4 id="void-drawtextconst-stdstring-text-const-vec2-textposition-const-vec2-mapsizes"><strong>void drawText(const std::string &amp;text, const Vec2 &amp;text_position, const Vec2 &amp;map_sizes)</strong></h4>
+
+<blockquote>
+  <p>Draw the <em>text</em> at <em>text_position</em> according to the <em>map_sizes</em></p>
+</blockquote>
+
+<p>For instance:</p>
+
+<pre><code>void arc::SDL2::drawText(const std::string &amp;text,
+const arc::Vec2&lt;float&gt; &amp;pos, const arc::Vec2&lt;size_t&gt; &amp;msize)
+{
+    SDL_Surface* s_text = TTF_RenderText_Solid(_font, text.c_str(), _color);
+    SDL_Texture* t_text = SDL_CreateTextureFromSurface(_renderer, s_text);
+    SDL_Rect rect;
+    rect.x = pos.x * arc::SDL2::width / (msize.x == 0 ? 1 : msize.x);
+    rect.y = pos.y * arc::SDL2::height / (msize.y == 0 ? 1 : msize.y);
+    TTF_SizeText(_font, text.c_str(), &amp;(rect.w), &amp;(rect.h));
+    rect.w = rect.w * _font_size / 10.0;
+    rect.h = rect.h * _font_size / 10.0;
+    SDL_RenderCopy(_renderer, t_text, NULL, &amp;rect);
+}
+</code></pre>
+
+<hr>
+
+
+
+<h2 id="keycode">KeyCode</h2>
+
+<pre><code>    namspace arc {
+        enum KeyCode {
+            LEFT = 128,
+            RIGHT,
+            UP,
+            DOWN,
+            ESCAPE,
+            ENTER,
+            BACKSPACE
+        };
+    }
+</code></pre>
+
+<hr>
+
+
+
+<h2 id="block">Block</h2>
+
+<pre><code>namespace arc {
+    class Block {
+    public:
+        Block(int textureIdxParam, const arc::Vec2&lt;float&gt; &amp;posParam)
+            : textureIdx(textureIdxParam), pos(posParam)
+            {}
+        ~Block() = default;
+
+        void operator=(int textureIdxParam) {
+            textureIdx = textureIdxParam;
+        }
+        void operator=(const arc::Vec2&lt;float&gt; &amp;posParam) {
+            pos = posParam;
+        }
+        void operator=(const arc::Block &amp;blockParam) {
+            textureIdx = blockParam.textureIdx;
+            pos = blockParam.pos;
+        }
+    public:
+        int textureIdx;
+        arc::Vec2&lt;float&gt; pos;
+    };
+}
+</code></pre>
+
+<hr>
+
+
+
+<h1 id="create-a-game-library">Create a game library</h1>
+
+<hr>
+
+
+
+<h3 id="1-getting-started-1">1. Getting started</h3>
+
+<hr>
+
+<blockquote>
+  <p>In order to make your game library compatible with our game platform, your game library’s class <strong>HAVE TO</strong> inherite from our game interface*:</p>
+</blockquote>
+
+<pre><code>#include &lt;memory&gt;
+#include &lt;string&gt;
+#include "Common.hpp"
+
+namespace arc {
+enum GameStatus {
+    GAMEOVER,
+    PLAYING
+};
+
+class IGame {
+public:
+        virtual ~IGame() = default;
+
+        virtual std::shared_ptr&lt;arc::IGame&gt; getInstance() const = 0;
+
+        virtual arc::GameStatus update(int) = 0;
+
+        virtual const std::vector&lt;arc::Vec2&lt;size_t&gt;&gt; &amp;getMapsSizes()
+        const = 0;
+
+        virtual const arc::blocksLayers &amp;getBlocksLayers() const = 0;
+        virtual void setBlocks(const std::vector&lt;int&gt; &amp;) = 0;
+        virtual const std::vector&lt;std::string&gt; &amp;getTexturesPaths()
+        const = 0;
+
+        virtual void saveScore(const std::string &amp;) const = 0;
+        virtual const std::vector&lt;std::string&gt; &amp;getScores() = 0;
+        virtual const std::string &amp;getCurrentScore() = 0;
+    };
+}
+</code></pre>
+
+<hr>
+
+<h3 id="2-functions-explanations-1">2. Functions’ explanations</h3>
+
+
+
+<h4 id="void-updateint-keycode"><strong>void update(int keyCode)</strong></h4>
+
+<blockquote>
+  <p><strong>update</strong> is called every game loop</p>
+</blockquote>
+
+<p>In this function, you must:</p>
+
+<blockquote>
+  <ul>
+  <li>Handle key pressed event</li>
+  <li>Update game’s maps </li>
+  </ul>
+</blockquote>
+
+<hr>
+
+
+
+<h4 id="const-stdvector-arcvec2-getmapssizes"><strong>const std::vector&lt; arc::Vec2&gt; &amp;getMapsSizes()</strong></h4>
+
+<blockquote>
+  <p><strong>getMapsSizes</strong> return the maps’ sizes (row, col)</p>
+</blockquote>
+
+<hr>
+
+<h4 id="const-arcblockslayers-getblockslayers-const"><strong>const arc::blocksLayers &amp;getBlocksLayers() const</strong></h4>
+
+<blockquote>
+  <p><strong>getBlocksLayers</strong> return an array of maps, each map is an list of <a href="#block">arc::Block</a> </p>
+</blockquote>
+
+<hr>
+
+
+
+<h4 id="const-stdvector-gettexturespaths"><strong>const std::vector &amp;getTexturesPaths()</strong></h4>
+
+<blockquote>
+  <p><strong>getTexturesPaths</strong> return an array of paths to the texture’s folder</p>
+</blockquote>
+
+<p>Example: <br>
+You want to create an apple’s texture, put its .png and .txt (or .3d, …) in a folder and name them <strong>block</strong>: </p>
+
+<blockquote>
+  <p>/home/snake/textures/apple/block.png <br>
+  /home/snake/textures/apple/block.txt</p>
+</blockquote>
+
+<p>Then your <strong>getTexturesPaths</strong> must return an array that contains “/home/snake/textures/apple”</p>
+
+<hr>
+
+
+
+<h4 id="void-setblocksconst-stdvector-texturesidx"><strong>void setBlocks(const std::vector &amp;textures_idx)</strong></h4>
+
+<blockquote>
+  <p><strong>setBlocks</strong> is called right after getTexturesPaths, before the game start </p>
+</blockquote>
+
+<p>In this function, you must</p>
+
+<blockquote>
+  <p>Save <strong>textures_idx</strong> as an attributes for future uses.</p>
+</blockquote>
+
+<hr>
+
+<h4 id="const-stdvector-getscores"><strong>const std::vector &amp;getScores()</strong></h4>
+
+<blockquote>
+  <p><strong>getScores</strong> return all saved scores. </p>
+</blockquote>
+
+<hr>
+
+
+
+<h4 id="void-savescoreconst-stdstring-playername-const"><strong>void saveScore(const std::string &amp;player_name) const</strong></h4>
+
+<blockquote>
+  <p><strong>saveScore</strong> save the current score in a file. </p>
+</blockquote>
+
+<hr></div></body>
+</html>
